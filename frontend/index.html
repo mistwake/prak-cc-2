@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>RPG Inventory System</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #1a1a2e; color: #e94560; padding: 20px; }
+        .inventory-box { max-width: 500px; background: #16213e; padding: 30px; border: 3px solid #0f3460; border-radius: 15px; margin: auto; box-shadow: 0 0 20px rgba(233, 69, 96, 0.3); }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 3px; }
+        .stats { color: #00d2ff; border-bottom: 1px solid #444; margin-bottom: 20px; padding-bottom: 10px; }
+        ul { list-style: none; padding: 0; }
+        li { background: #0f3460; margin: 8px 0; padding: 12px; border-left: 5px solid #e94560; font-weight: bold; }
+        .input-group { display: flex; gap: 10px; margin-top: 20px; }
+        input { flex: 1; padding: 10px; border-radius: 5px; border: none; background: #0f3460; color: white; }
+        button { padding: 10px 20px; background: #e94560; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #ff2e63; }
+    </style>
+</head>
+<body>
+    <div class="inventory-box">
+        <h1 id="judul">Loading Inventory...</h1>
+        <div class="stats">
+            <p>PLAYER: <span id="pemilik">...</span></p>
+            <p>ID: <span id="nim">...</span></p>
+        </div>
+        
+        <h3>Current Loot:</h3>
+        <ul id="item-list"></ul>
+
+        <div class="input-group">
+            <input type="text" id="new-item" placeholder="Enter new loot name...">
+            <button onclick="addItem()">LOOT!</button>
+        </div>
+    </div>
+
+    <script>
+        // Masukkan FQDN Frontend/Backend dari Azure ACI nanti di sini [cite: 59]
+        const API_URL = "/api";
+
+        async function loadData() {
+            try {
+                const res = await fetch(`${API_URL}/info`);
+                const data = await res.json();
+                document.getElementById('judul').innerText = data.judul_katalog;
+                document.getElementById('pemilik').innerText = data.pemilik;
+                document.getElementById('nim').innerText = data.nim;
+                
+                const list = document.getElementById('item-list');
+                list.innerHTML = "";
+                data.items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerText = `[★] ${item}`;
+                    list.appendChild(li);
+                });
+            } catch (err) { console.error("Gagal load data inventory."); }
+        }
+
+        async function addItem() {
+            const input = document.getElementById('new-item');
+            if (!input.value) return;
+            await fetch(`${API_URL}/add-item`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item: input.value })
+            });
+            input.value = "";
+            loadData();
+        }
+        loadData();
+    </script>
+</body>
+</html>
