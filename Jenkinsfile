@@ -20,14 +20,14 @@ pipeline {
                     dir('backend') {
                         // login ke docker hub
                         withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                            bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
                         }
                         
                         // build image
-                        sh "docker build -t ${DOCKERHUB_USERNAME}/backend-inventory:latest ."
+                        bat "docker build -t ${DOCKERHUB_USERNAME}/backend-inventory:latest ."
                         
                         // push image
-                        sh "docker push ${DOCKERHUB_USERNAME}/backend-inventory:latest"
+                        bat "docker push ${DOCKERHUB_USERNAME}/backend-inventory:latest"
                     }
                 }
             }
@@ -38,10 +38,10 @@ pipeline {
                 script {
                     dir('frontend') {
                         // build image
-                        sh "docker build -t ${DOCKERHUB_USERNAME}/frontend-inventory:latest ."
+                        bat "docker build -t ${DOCKERHUB_USERNAME}/frontend-inventory:latest ."
                         
                         // push image
-                        sh "docker push ${DOCKERHUB_USERNAME}/frontend-inventory:latest"
+                        bat "docker push ${DOCKERHUB_USERNAME}/frontend-inventory:latest"
                     }
                 }
             }
@@ -53,7 +53,7 @@ pipeline {
                     // deploy menggunakan kubeconfig dari credentials jenkins
                     withKubeConfig([credentialsId: "${KUBECONFIG_CREDENTIALS}"]) {
                         // apply file manifest secara langsung
-                        sh "kubectl apply -f deployment.yaml -f ingress.yaml"
+                        bat "kubectl apply -f deployment.yaml -f ingress.yaml"
                     }
                 }
             }
@@ -63,7 +63,7 @@ pipeline {
     post {
         always {
             // logout docker setelah selesai
-            sh "docker logout"
+            bat "docker logout"
         }
     }
 }
